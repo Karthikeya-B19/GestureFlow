@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gestureflow"
+version = "1.0.0"
+description = "CV-Based Human Computer Interaction Suite using MediaPipe gesture recognition"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Karthikeya", email = "karthikeya@example.com"},
+]
+keywords = ["gesture", "mediapipe", "hci", "computer-vision", "opencv", "canvas"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+]
+dependencies = [
+    "mediapipe>=0.10.0",
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "pyautogui>=0.9.54",
+    "pynput>=1.7.6",
+    "pycaw>=20221227",
+    "screen-brightness-control>=0.22.0",
+    "PyQt6>=6.5.0",
+    "comtypes>=1.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "pre-commit>=3.3.0",
+    "pyinstaller>=5.13.0",
+]
+
+[project.scripts]
+gestureflow-hci = "apps.hci.main:main"
+gestureflow-canvas = "apps.canvas.main:main"
+
+[project.urls]
+Homepage = "https://github.com/Karthikeya-B19/gestureflow"
+Repository = "https://github.com/Karthikeya-B19/gestureflow"
+Issues = "https://github.com/Karthikeya-B19/gestureflow/issues"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.flake8]
+max-line-length = 100
+exclude = [".git", "__pycache__", "build", "dist", "*.egg-info"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.setuptools.packages.find]
+include = ["apps*", "core*"]

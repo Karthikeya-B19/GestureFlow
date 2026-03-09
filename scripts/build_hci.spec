@@ -6,12 +6,14 @@ import os
 
 block_cipher = None
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(SPEC), '..'))
+
 a = Analysis(
-    ['apps/hci/main.py'],
-    pathex=['.'],
+    [os.path.join(ROOT, 'apps', 'hci', 'main.py')],
+    pathex=[ROOT],
     binaries=[],
     datas=[
-        ('assets/icons/*.ico', 'assets/icons'),
+        (os.path.join(ROOT, 'assets', 'icons', '*.ico'), 'assets/icons'),
     ],
     hiddenimports=[
         'pycaw',
@@ -34,16 +36,36 @@ a = Analysis(
         'PyQt6.QtGui',
         'PyQt6.QtWidgets',
         'pyautogui',
+        # matplotlib + dependencies (needed by mediapipe)
+        'matplotlib',
+        'matplotlib.backends.backend_agg',
+        'matplotlib.figure',
+        'matplotlib.pyplot',
+        'PIL',
+        'PIL.Image',
+        'PIL.ImageDraw',
+        'PIL.ImageFont',
+        'PIL.ImageColor',
+        'kiwisolver',
+        'cycler',
+        'dateutil',
+        'pyparsing',
+        'packaging',
+        'packaging.version',
+        'contourpy',
+        'fontTools',
+        # mediapipe dependencies
+        'google.protobuf',
+        'google.protobuf.descriptor',
+        'absl',
+        'absl.logging',
+        'flatbuffers',
+        'attrs',
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        'matplotlib',
-        'scipy',
-        'pandas',
-        'PIL',
-        'tkinter',
         'unittest',
         'test',
     ],
@@ -58,10 +80,8 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='GestureFlowHCI',
     debug=False,
     bootloader_ignore_signals=False,
@@ -75,5 +95,16 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='assets/icons/app_icon.ico',
+    icon=os.path.join(ROOT, 'assets', 'icons', 'app_icon.ico'),
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='GestureFlowHCI',
 )

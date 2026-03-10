@@ -89,6 +89,13 @@ a = Analysis(
     runtime_hooks=[],
     excludes=[
         'test',
+        'torch',
+        'torch._C',
+        'torch.nn',
+        'torch.cuda',
+        'torch.utils',
+        'torch.autograd',
+        'torch.jit',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -118,6 +125,11 @@ exe = EXE(
     entitlements_file=None,
     icon=os.path.join(ROOT, 'assets', 'icons', 'app_icon.ico'),
 )
+
+# Filter out torch binaries and data (not needed at runtime)
+_torch_exclude = ('torch', 'caffe2')
+a.binaries = [b for b in a.binaries if not any(b[0].startswith(prefix) or ('\\torch\\' in b[1] if len(b) > 1 else False) for prefix in _torch_exclude)]
+a.datas = [d for d in a.datas if not any(d[0].startswith(prefix) or ('\\torch\\' in d[1] if len(d) > 1 else False) for prefix in _torch_exclude)]
 
 coll = COLLECT(
     exe,

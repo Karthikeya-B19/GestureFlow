@@ -48,3 +48,15 @@ coverage.xml
 # Distribution
 *.tar.gz
 *.whl
+
+# Build logs and artifacts
+build_*_log*.txt
+build_*_new_log*.txt
+build_*_out*.txt
+build_*_err*.txt
+iscc_log*.txt
+*_upload.json
+upload_*.json
+hci_upload.json
+installer_output/
+*.exe

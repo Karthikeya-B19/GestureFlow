@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 
 import cv2
 import numpy as np
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 from apps.hci.camera import CameraThread
@@ -52,7 +52,6 @@ class ProcessingWorker(QObject):
         self._classifier = GestureClassifier()
         self._last_time: float = time.time()
 
-    @pyqtSlot(np.ndarray)
     def process_frame(self, frame: np.ndarray) -> None:
         """Process a single camera frame."""
         now = time.time()
@@ -211,7 +210,6 @@ class GestureFlowHCI:
     def _on_gesture_label(self, gesture: str, confidence: float) -> None:
         self._overlay.set_gesture(gesture, confidence)
 
-    @pyqtSlot(dict)
     def _on_gesture_detected(self, action: dict) -> None:
         ctrl = action.get("controller", "")
         act = action.get("action", "")

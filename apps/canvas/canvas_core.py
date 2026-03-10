@@ -79,9 +79,9 @@ class ToolType(Enum):
     SHAPES_2D = auto()
     SHAPES_3D = auto()
     LINE = auto()
-    MOVE = auto()
     RESIZE = auto()
     KNIFE = auto()
+    MOVE = auto()
 
 class InteractionMode(Enum):
     IDLE = auto()
@@ -867,6 +867,8 @@ class CoordinateMappingLayer:
     def camera_to_canvas(self, point: Point) -> Point:
         norm_x = max(0.0, min(1.0, point.x / self.camera_width))
         norm_y = max(0.0, min(1.0, point.y / self.camera_height))
+        # Mirror X so hand movement matches canvas direction (webcam is mirrored)
+        norm_x = 1.0 - norm_x
         edge_factor = self._get_edge_proximity(norm_x, norm_y)
         margin_x = self.margin_center * (1.0 - edge_factor) + self.margin_edge * edge_factor
         margin_y = margin_x

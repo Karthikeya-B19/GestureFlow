@@ -39,7 +39,7 @@ class ProcessingWorker(QObject):
     """
 
     gesture_detected = pyqtSignal(dict)
-    gesture_label = pyqtSignal(str, float)
+    gesture_label = pyqtSignal(str, "double")
 
     def __init__(self) -> None:
         super().__init__()

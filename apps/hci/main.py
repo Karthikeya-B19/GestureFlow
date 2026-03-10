@@ -208,7 +208,6 @@ class GestureFlowHCI:
         self._overlay.set_opacity(opacity)
         self._overlay.set_click_through(config.get("click_through", HCIConfig.OVERLAY_CLICK_THROUGH))
 
-    @pyqtSlot(str, float)
     def _on_gesture_label(self, gesture: str, confidence: float) -> None:
         self._overlay.set_gesture(gesture, confidence)
 

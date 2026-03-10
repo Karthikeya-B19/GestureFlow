@@ -867,8 +867,6 @@ class CoordinateMappingLayer:
     def camera_to_canvas(self, point: Point) -> Point:
         norm_x = max(0.0, min(1.0, point.x / self.camera_width))
         norm_y = max(0.0, min(1.0, point.y / self.camera_height))
-        # Mirror X so hand movement matches canvas direction (webcam is mirrored)
-        norm_x = 1.0 - norm_x
         edge_factor = self._get_edge_proximity(norm_x, norm_y)
         margin_x = self.margin_center * (1.0 - edge_factor) + self.margin_edge * edge_factor
         margin_y = margin_x
@@ -1703,6 +1701,7 @@ class CanvasInteractionController:
 
     def process_frame(self, frame: np.ndarray) -> np.ndarray:
         """Process a BGR camera frame and return the rendered canvas image."""
+        frame = cv2.flip(frame, 1)
         now = time.time()
         self._frame_times.append(now - self._last_frame_time)
         self._last_frame_time = now

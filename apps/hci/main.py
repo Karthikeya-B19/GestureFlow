@@ -40,6 +40,7 @@ class ProcessingWorker(QObject):
 
     gesture_detected = pyqtSignal(dict)
     gesture_label = pyqtSignal(str, "double")
+    annotated_frame = pyqtSignal(np.ndarray)
 
     def __init__(self) -> None:
         super().__init__()
@@ -61,9 +62,15 @@ class ProcessingWorker(QObject):
         results = self._tracker.process_frame(frame)
         if not results:
             self.gesture_label.emit("No Hand", 0.0)
+            self.annotated_frame.emit(frame)
             return
 
         hand = results[0]
+
+        # Draw landmarks on a copy for the live preview
+        preview = frame.copy()
+        self._tracker.draw_landmarks(preview, hand)
+        self.annotated_frame.emit(preview)
 
         # Route through classifier
         action = self._classifier.classify(
@@ -135,6 +142,8 @@ class GestureFlowHCI:
         self._camera.camera_error.connect(self._on_camera_error)
         self._worker.gesture_label.connect(self._on_gesture_label)
         self._worker.gesture_detected.connect(self._on_gesture_detected)
+        self._worker.annotated_frame.connect(self._overlay.update_camera_feed)
+        self._overlay.close_requested.connect(self._quit)
 
         # Tray callbacks
         self._tray.on_toggle_overlay = self._toggle_overlay
@@ -225,8 +234,19 @@ class GestureFlowHCI:
 
 
 def main() -> None:
-    app = GestureFlowHCI()
-    sys.exit(app.run())
+    try:
+        app = GestureFlowHCI()
+        sys.exit(app.run())
+    except Exception:
+        import traceback
+        import os
+        crash_log = os.path.join(
+            os.path.dirname(os.path.abspath(sys.argv[0] if sys.argv else __file__)),
+            "gestureflow_crash.log",
+        )
+        with open(crash_log, "w") as f:
+            traceback.print_exc(file=f)
+        raise
 
 
 if __name__ == "__main__":

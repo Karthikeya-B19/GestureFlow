@@ -132,9 +132,9 @@ class HandTracker:
             return frame
 
         # Reconstruct MediaPipe landmark object for drawing
-        landmark_proto = mp.solutions.hands.HandLandmark
+        from mediapipe.framework.formats import landmark_pb2
         h, w, _ = frame.shape
-        hand_landmarks = mp.framework.formats.landmark_pb2.NormalizedLandmarkList()
+        hand_landmarks = landmark_pb2.NormalizedLandmarkList()
         for lm_tuple in hand_result.landmarks:
             landmark = hand_landmarks.landmark.add()
             landmark.x = lm_tuple[0]

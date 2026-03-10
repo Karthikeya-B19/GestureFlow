@@ -14,7 +14,7 @@ class HCIConfig:
     MODEL_COMPLEXITY = 0  # 0=lite (fast), 1=full (precise)
     MIN_DETECTION_CONFIDENCE = 0.7
     MIN_TRACKING_CONFIDENCE = 0.5
-    LOW_CONFIDENCE_THRESHOLD = 0.6  # Reject detections below this
+    LOW_CONFIDENCE_THRESHOLD = 0.3  # Reject detections below this
 
     # --- Cursor ---
     CURSOR_SMOOTHING_ALPHA = 0.5
@@ -74,7 +74,7 @@ class HCIConfig:
     # --- Gesture Classifier ---
     FRAME_SKIP_ENABLED = True
     FRAME_SKIP_STABLE_COUNT = 5  # consecutive stable frames before skipping
-    GESTURE_TRANSITION_BUFFER = 2  # frames of IDLE between gesture changes
+    GESTURE_TRANSITION_BUFFER = 1  # frames of IDLE between gesture changes
     GESTURE_PRIORITY_ORDER = [
         "fist",
         "rock_on",
@@ -88,7 +88,7 @@ class HCIConfig:
     ]
 
     # --- Finger Extension ---
-    FINGER_EXTENSION_THRESHOLD = 0.03
+    FINGER_EXTENSION_THRESHOLD = 0.005
 
     # --- Overlay ---
     OVERLAY_OPACITY = 0.85

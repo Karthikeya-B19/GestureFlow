@@ -113,7 +113,7 @@ class GestureClassifier:
         if LandmarkUtils.is_fist(landmarks, handedness, threshold):
             return "fist"
 
-        # 2. Rock-on (index + pinky extended)
+        # 2. Rock-on (index + pinky extended) — volume
         if LandmarkUtils.is_rock_on(landmarks, handedness, threshold):
             return "rock_on"
 
@@ -125,10 +125,15 @@ class GestureClassifier:
         if LandmarkUtils.is_thumbs_down(landmarks, handedness, threshold):
             return "thumbs_down"
 
-        # 5-8. Count-based gestures (no thumb)
+        # 5-8. Count-based gestures
         states = LandmarkUtils.get_all_finger_states(landmarks, handedness, threshold)
         non_thumb = [states["index"], states["middle"], states["ring"], states["pinky"]]
         count = sum(non_thumb)
+
+        # Thumb + pinky out (others curled) — brightness down
+        if (states["thumb"] and states["pinky"]
+                and not states["index"] and not states["middle"] and not states["ring"]):
+            return "thumb_pinky"
 
         if not states["thumb"]:
             if count == 3 and states["index"] and states["middle"] and states["ring"]:
@@ -140,7 +145,7 @@ class GestureClassifier:
             if count == 2 and states["index"] and states["middle"]:
                 return "two_fingers"
 
-        # 9. Open hand (all 5)
+        # Open hand (all 5)
         if all(states.values()):
             return "open_hand"
 
@@ -207,8 +212,6 @@ class GestureClassifier:
             self._same_gesture_count = 0
         self._last_gesture = gesture
 
-        kwargs["landmarks"] = landmarks
-
         if gesture == "fist":
             return self.tab_switch.process(landmarks, handedness, **kwargs)
         if gesture == "rock_on":
@@ -218,6 +221,8 @@ class GestureClassifier:
         if gesture == "thumbs_down":
             return self.media.process(landmarks, handedness, **kwargs)
         if gesture == "three_fingers":
+            return self.brightness.process(landmarks, handedness, **kwargs)
+        if gesture == "thumb_pinky":
             return self.brightness.process(landmarks, handedness, **kwargs)
         if gesture == "four_fingers":
             return self.brightness.process(landmarks, handedness, **kwargs)

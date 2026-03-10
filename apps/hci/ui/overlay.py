@@ -1,11 +1,13 @@
-"""Overlay HUD — frameless, translucent, always-on-top widget."""
+"""Overlay HUD — frameless, translucent, always-on-top widget with live camera."""
 
 import logging
 from typing import Optional
 
-from PyQt6.QtCore import Qt, QPoint, QTimer
-from PyQt6.QtGui import QColor, QFont, QPainter, QPainterPath, QBrush, QPen
-from PyQt6.QtWidgets import QWidget
+import cv2
+import numpy as np
+from PyQt6.QtCore import Qt, QPoint, QTimer, pyqtSignal
+from PyQt6.QtGui import QColor, QFont, QImage, QPainter, QPainterPath, QBrush, QPen, QPixmap
+from PyQt6.QtWidgets import QWidget, QPushButton
 
 from apps.hci.config import HCIConfig
 
@@ -13,17 +15,23 @@ logger = logging.getLogger(__name__)
 
 
 class OverlayWidget(QWidget):
-    """Semi-transparent overlay showing current gesture, confidence, FPS.
+    """Semi-transparent overlay showing live camera feed + current gesture info.
 
     Features:
+    - Small live camera preview with hand landmarks
+    - Gesture label, confidence bar, FPS, mode
     - Draggable, frameless, always-on-top
     - Optional click-through mode
-    - Update throttle (only repaint on state change)
     - Position memory via save/restore
     """
 
-    OVERLAY_W = 260
-    OVERLAY_H = 100
+    close_requested = pyqtSignal()
+
+    CAM_W = 200
+    CAM_H = 150
+    INFO_H = 90
+    OVERLAY_W = CAM_W + 20  # 10px padding on each side
+    OVERLAY_H = CAM_H + INFO_H + 20  # cam + info + padding
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -35,6 +43,17 @@ class OverlayWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setFixedSize(self.OVERLAY_W, self.OVERLAY_H)
 
+        # Close button
+        self._close_btn = QPushButton("X", self)
+        self._close_btn.setFixedSize(22, 22)
+        self._close_btn.move(self.OVERLAY_W - 28, 4)
+        self._close_btn.setStyleSheet(
+            "QPushButton { background: rgba(200,50,50,180); color: white; "
+            "border: none; border-radius: 11px; font-weight: bold; font-size: 12px; }"
+            "QPushButton:hover { background: rgba(255,60,60,220); }"
+        )
+        self._close_btn.clicked.connect(self.close_requested.emit)
+
         # State
         self._gesture: str = "Idle"
         self._confidence: float = 0.0
@@ -44,6 +63,9 @@ class OverlayWidget(QWidget):
         self._opacity: float = HCIConfig.OVERLAY_OPACITY
         self._click_through: bool = HCIConfig.OVERLAY_CLICK_THROUGH
         self._show_fps: bool = HCIConfig.OVERLAY_SHOW_FPS
+
+        # Camera preview
+        self._cam_pixmap: Optional[QPixmap] = None
 
         # Drag support
         self._drag_pos: Optional[QPoint] = None
@@ -57,8 +79,18 @@ class OverlayWidget(QWidget):
         if self._click_through:
             self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
-        # Position — default bottom-right
+        # Position — default top-left
         self.move(50, 50)
+
+    def update_camera_feed(self, frame: np.ndarray) -> None:
+        """Receive an annotated BGR frame and update the camera preview."""
+        small = cv2.resize(frame, (self.CAM_W, self.CAM_H), interpolation=cv2.INTER_AREA)
+        rgb = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb.shape
+        qimg = QImage(rgb.data, w, h, ch * w, QImage.Format.Format_RGB888)
+        self._cam_pixmap = QPixmap.fromImage(qimg.copy())
+        self._dirty = True
+        self.update()
 
     def set_gesture(self, gesture: str, confidence: float = 0.0) -> None:
         if gesture != self._gesture or abs(confidence - self._confidence) > 0.05:
@@ -100,10 +132,6 @@ class OverlayWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, enabled)
 
     def paintEvent(self, event) -> None:
-        if not self._dirty:
-            return
-        self._dirty = False
-
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -117,40 +145,66 @@ class OverlayWidget(QWidget):
         painter.setPen(QPen(QColor(80, 80, 120, 150), 1))
         painter.drawPath(path)
 
+        # --- Camera preview ---
+        cam_x, cam_y = 10, 10
+        # Draw camera background
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(10, 10, 20))
+        cam_path = QPainterPath()
+        cam_path.addRoundedRect(cam_x, cam_y, self.CAM_W, self.CAM_H, 8, 8)
+        painter.drawPath(cam_path)
+
+        if self._cam_pixmap:
+            # Clip to rounded rect
+            painter.save()
+            painter.setClipPath(cam_path)
+            painter.drawPixmap(cam_x, cam_y, self._cam_pixmap)
+            painter.restore()
+        else:
+            # Placeholder text
+            painter.setPen(QColor(80, 80, 100))
+            painter.setFont(QFont("Segoe UI", 9))
+            painter.drawText(cam_x, cam_y, self.CAM_W, self.CAM_H,
+                             Qt.AlignmentFlag.AlignCenter, "No Camera")
+
+        # --- Info section below camera ---
+        info_y = cam_y + self.CAM_H + 8
+
         # Gesture label
         painter.setPen(QColor(220, 220, 255))
-        font = QFont("Segoe UI", 12, QFont.Weight.Bold)
+        font = QFont("Segoe UI", 11, QFont.Weight.Bold)
         painter.setFont(font)
-        painter.drawText(12, 28, self._gesture)
+        painter.drawText(10, info_y + 14, self._gesture)
 
         # Confidence bar
-        bar_x, bar_y, bar_w, bar_h = 12, 38, self.width() - 24, 8
+        bar_x, bar_y = 10, info_y + 22
+        bar_w, bar_h = self.CAM_W, 6
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QColor(40, 40, 60))
-        painter.drawRoundedRect(bar_x, bar_y, bar_w, bar_h, 4, 4)
+        painter.drawRoundedRect(bar_x, bar_y, bar_w, bar_h, 3, 3)
         conf_color = self._confidence_color()
         painter.setBrush(conf_color)
         conf_w = int(bar_w * min(1.0, self._confidence))
         if conf_w > 0:
-            painter.drawRoundedRect(bar_x, bar_y, conf_w, bar_h, 4, 4)
+            painter.drawRoundedRect(bar_x, bar_y, conf_w, bar_h, 3, 3)
 
-        # Mode label
+        # Mode + FPS row
         painter.setPen(QColor(160, 160, 200))
-        small_font = QFont("Segoe UI", 9)
+        small_font = QFont("Segoe UI", 8)
         painter.setFont(small_font)
-        painter.drawText(12, 65, f"Mode: {self._mode}")
+        painter.drawText(10, info_y + 45, f"Mode: {self._mode}")
 
-        # FPS
         if self._show_fps:
             painter.setPen(QColor(100, 100, 140))
-            painter.drawText(self.width() - 70, 65, f"{self._fps:.1f} FPS")
+            painter.drawText(self.CAM_W - 40, info_y + 45, f"{self._fps:.0f} FPS")
 
         # Feedback flash
         if self._feedback_text:
             painter.setPen(QColor(100, 255, 150))
-            painter.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-            painter.drawText(12, 88, self._feedback_text)
+            painter.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            painter.drawText(10, info_y + 62, self._feedback_text)
 
+        self._dirty = False
         painter.end()
 
     def _confidence_color(self) -> QColor:

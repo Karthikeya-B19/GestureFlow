@@ -17,10 +17,10 @@ All gestures are detected using **MediaPipe hand landmark geometry** — no cust
 | 9 | **Thumbs Down** 👎 | Thumb extended downward, all fingers curled | Mute/Unmute toggle | 1000ms |
 | 10 | **Fist** ✊ (hold 500ms) | All fingers curled, held for 500ms | Alt+Tab (direction-aware: left = back) | 1500ms |
 | 11 | **3 Fingers** | Index + middle + ring extended, no thumb/pinky | Brightness up (+10%) | 800ms |
-| 12 | **4 Fingers** | Index + middle + ring + pinky extended, no thumb | Brightness down (-10%) | 800ms |
+| 12 | **Thumb + Pinky** 🤙 | Thumb + pinky extended, index + middle + ring curled | Brightness down (-10%) | 800ms |
 
 ### Gesture Priority (highest first)
-1. Fist → 2. Rock-on → 3. Thumbs Up → 4. Thumbs Down → 5. 3 Fingers → 6. 4 Fingers → 7. 1 Finger (Scroll Up) → 8. 2 Fingers (Scroll Down) → 9. Open Hand (Cursor)
+1. Fist → 2. Rock-on → 3. Thumbs Up → 4. Thumbs Down → 5. Thumb+Pinky (Brightness Down) → 6. 3 Fingers (Brightness Up) → 7. 4 Fingers → 8. 1 Finger (Scroll Up) → 9. 2 Fingers (Scroll Down) → 10. Open Hand (Cursor)
 
 ### Temporal Smoothing
 All gestures (except cursor movement) require **3 out of 5** consecutive frames of agreement before triggering. This eliminates false positives from transient hand positions.

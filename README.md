@@ -28,7 +28,7 @@ Two standalone apps:
 | Thumbs down 👎 | Mute / Unmute |
 | Fist ✊ (hold 500ms) | Alt+Tab (direction-aware) |
 | 3 fingers (I+M+R) | Brightness up |
-| 4 fingers (I+M+R+P) | Brightness down |
+| Thumb + Pinky (🤙) | Brightness down |
 
 ### GestureFlow Canvas
 

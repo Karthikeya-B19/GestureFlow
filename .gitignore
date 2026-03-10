@@ -60,3 +60,8 @@ upload_*.json
 hci_upload.json
 installer_output/
 *.exe
+
+build_hci_fix.txt
+build_hci_v110.txt
+build_output_*.txt
+gesture_calibration.json

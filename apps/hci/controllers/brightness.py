@@ -36,7 +36,8 @@ def _set_brightness(value: int) -> bool:
 
 
 class BrightnessController(BaseController):
-    """3 fingers (index+middle+ring) → brightness up. 4 fingers → brightness down."""
+    """Thumb + pinky extended (others curled) → brightness down.
+    3 fingers (index+middle+ring) → brightness up."""
 
     def __init__(self) -> None:
         super().__init__(
@@ -71,17 +72,18 @@ class BrightnessController(BaseController):
             and not states["pinky"]
         )
 
-        four_fingers = (
-            states["index"]
-            and states["middle"]
-            and states["ring"]
+        # Thumb + pinky out, others curled = brightness down
+        thumb_pinky = (
+            states["thumb"]
             and states["pinky"]
-            and not states["thumb"]
+            and not states["index"]
+            and not states["middle"]
+            and not states["ring"]
         )
 
         if three_fingers:
             return "brightness_up"
-        if four_fingers:
+        if thumb_pinky:
             return "brightness_down"
 
         # Reset hold timer when gesture changes

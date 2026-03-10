@@ -5,6 +5,25 @@ All notable changes to GestureFlow will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-10
+
+### Changed
+- **Volume controller** — replaced pycaw audio interface with Windows media key simulation (`VK_VOLUME_UP`/`VK_VOLUME_DOWN`); works on all machines regardless of audio device detection
+- **Brightness down gesture** — changed from 4-finger gesture to thumb + pinky (🤙), more ergonomic and less prone to misdetection
+- **Rock-on detection** — split thresholds: index/pinky use a low threshold for easy extension detection while middle/ring use a higher threshold so partially uncurled fingers don't block the gesture
+- **Gesture sensitivity** — relaxed `FINGER_EXTENSION_THRESHOLD` (0.03 → 0.005) and `LOW_CONFIDENCE_THRESHOLD` (0.6 → 0.3) for more forgiving gesture recognition
+- **Gesture transition buffer** — reduced from 2 idle frames to 1 for faster gesture switching
+- **Thumb extension distance** — reduced from 0.06 to 0.04 for easier thumb detection
+- **Thumbs up/down detection** — relaxed Y-offset checks for more forgiving recognition
+
+### Added
+- **Close button** on overlay HUD (red "X" at top-right corner) — emits `close_requested` signal to shut down the app cleanly
+- **Gesture calibration tool** (`scripts/calibrate_gestures.py`) — interactive CLI tool to capture per-user hand landmark data for all 9 gestures (optional, not loaded by default)
+
+### Fixed
+- **MediaPipe import crash** — `mp.framework.formats.landmark_pb2` AttributeError on newer mediapipe versions; changed to direct import `from mediapipe.framework.formats import landmark_pb2`
+- **Volume controller disabled on boot** — pycaw `AudioDevice.Activate()` fails on some machines; replaced with media key approach that always works
+
 ## [1.0.0] - 2026-03-09
 
 ### Added

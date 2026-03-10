@@ -73,10 +73,10 @@ Output: `dist/hci/GestureFlowHCI.exe` and `dist/canvas/GestureFlowCanvas.exe`
 - Try a different camera index in Settings → General → Camera Index
 - On some systems, try running as administrator
 
-### "Audio device unavailable" (Volume control disabled)
-- Ensure speakers/headphones are connected
-- Check Windows sound settings
-- Volume controller auto-retries every 30 seconds
+### Volume control
+- Volume uses Windows media key simulation — works on all machines
+- If volume doesn't respond, check that your system handles media keys
+- No special audio device setup required
 
 ### "Display does not support software brightness"
 - External monitors via HDMI may not support software brightness control

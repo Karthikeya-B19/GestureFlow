@@ -59,7 +59,7 @@ project_final/
 │   │   │   ├── base.py       # BaseController ABC
 │   │   │   ├── cursor.py     # Cursor + click/drag
 │   │   │   ├── scroll.py     # Scroll up/down
-│   │   │   ├── volume.py     # Volume (pycaw)
+│   │   │   ├── volume.py     # Volume (Windows media keys)
 │   │   │   ├── media.py      # Play/pause/mute
 │   │   │   ├── tab_switch.py # Alt+Tab
 │   │   │   └── brightness.py # Screen brightness

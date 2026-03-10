@@ -60,7 +60,7 @@ class LandmarkUtils:
         dist = np.linalg.norm(
             np.array(thumb_tip[:2]) - np.array(thumb_mcp[:2])
         )
-        if dist < 0.06:
+        if dist < 0.04:
             return False
 
         if handedness == "Right":
@@ -173,14 +173,21 @@ class LandmarkUtils:
         handedness: str = "Right",
         threshold: float = 0.03,
     ) -> bool:
-        """Detect rock-on gesture — index + pinky extended, middle + ring curled."""
-        states = LandmarkUtils.get_all_finger_states(landmarks, handedness, threshold)
-        return (
-            states["index"]
-            and states["pinky"]
-            and not states["middle"]
-            and not states["ring"]
-        )
+        """Detect rock-on gesture — index + pinky extended, middle + ring curled.
+
+        Uses a lenient threshold for middle/ring so they must be clearly
+        sticking out to block the gesture — makes detection much easier.
+        """
+        # Index and pinky: use the given (low) threshold — easy to detect as up
+        index_up = LandmarkUtils.is_finger_extended(landmarks, 0, threshold)
+        pinky_up = LandmarkUtils.is_finger_extended(landmarks, 3, threshold)
+
+        # Middle and ring: use a MUCH higher threshold — only block if clearly extended
+        curled_threshold = max(threshold, 0.04)
+        middle_up = LandmarkUtils.is_finger_extended(landmarks, 1, curled_threshold)
+        ring_up = LandmarkUtils.is_finger_extended(landmarks, 2, curled_threshold)
+
+        return index_up and pinky_up and not middle_up and not ring_up
 
     @staticmethod
     def is_thumbs_up(
@@ -196,7 +203,7 @@ class LandmarkUtils:
         if states["index"] or states["middle"] or states["ring"] or states["pinky"]:
             return False
         # Thumb tip must be above thumb MCP (pointing up)
-        return landmarks[LandmarkUtils.THUMB_TIP][1] < landmarks[LandmarkUtils.THUMB_MCP][1] - 0.02
+        return landmarks[LandmarkUtils.THUMB_TIP][1] < landmarks[LandmarkUtils.THUMB_MCP][1] + 0.01
 
     @staticmethod
     def is_thumbs_down(
@@ -211,7 +218,7 @@ class LandmarkUtils:
         if states["index"] or states["middle"] or states["ring"] or states["pinky"]:
             return False
         # Thumb tip must be below thumb MCP (pointing down)
-        return landmarks[LandmarkUtils.THUMB_TIP][1] > landmarks[LandmarkUtils.THUMB_MCP][1] + 0.02
+        return landmarks[LandmarkUtils.THUMB_TIP][1] > landmarks[LandmarkUtils.THUMB_MCP][1] - 0.01
 
     @staticmethod
     def normalize_to_screen(

@@ -2,7 +2,7 @@
 ; Builds a proper Windows installer with Start Menu shortcuts, uninstaller, etc.
 
 #define MyAppName "GestureFlow"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Karthikeya"
 #define MyAppURL "https://github.com/Karthikeya-B19/GestureFlow"
 

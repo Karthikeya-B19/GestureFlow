@@ -113,6 +113,7 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for full development guide.
 - [Installation Guide](docs/INSTALLATION.md)
 - [Development Guide](docs/DEVELOPMENT.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Pipeline Overview](docs/PIPELINE.md)
 
 ---
 
